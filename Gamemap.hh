@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 
-
 #ifndef GAMEMAP_HH
 #define GAMEMAP_HH
 
@@ -26,6 +25,7 @@ class Gamemap{
 	sf::Font font;
 	public:
 	
+	//constructeur par défaut
 	Gamemap(){
 		idcurrtscene=0;
 		time=clock.restart();
@@ -39,19 +39,22 @@ class Gamemap{
 		timeText.setPosition(230.0f, 10.0f);
 
 		}
+	//permet d'ajouter un joueur
+	void addPlayer(Character chara){
+		//std::cout<<"addPlayer"<<std::endl;
+		player= Character(chara);
+	}
+	
+	//ajoute une scene au vecteur de scene
+	void addScene(Scene scene){
+		//std::cout<<"addScene()"<<std::endl;
 		
-		void addPlayer(Character chara){
-			//std::cout<<"addPlayer"<<std::endl;
-			player= Character(chara);
-		}
-		void addScene(Scene scene){
-			//std::cout<<"addScene()"<<std::endl;
-			
-			vect_scene.push_back(Scene(scene));
-			//std::cout<<"addScene()"<<std::endl;
-			
-		}
+		vect_scene.push_back(Scene(scene));
+		//std::cout<<"addScene()"<<std::endl;
 		
+	}
+	
+	//prend en paramètre la position du joueur et renvoie -1 si le joueur est dans un mur tueur, 1 si il est dans un mur classique et 0 si il est libre de bouger
 	int checkInWall(const sf::Vector2f& pos, const sf::Vector2f& size ){
 		//si la position du joueur est dans un mur de la scene actuelle : renvoie 0
 		int tmp=vect_scene[idcurrtscene].checkInWall(pos, size);
@@ -63,6 +66,7 @@ class Gamemap{
 		}
 		return 0;
 	}
+	
 	//0 if the player can't move and 1 otherwise
 	int move_player(float mouvx, float mouvy){
 		sf::Vector2f tmp=player.getPosition();
@@ -79,16 +83,15 @@ class Gamemap{
 			return 1;
 		}
 	}
-	int killplayer(std::string debugstring){
-		//std::cout<<"killplayer() : "<<debugstring<<std::endl;
+	
+	//fonction pour tuer le joueur en écrivant "vous êtes morts" à l'écran 
+	int killplayer(){
 		
 		player.setState(DEAD);
 		timeText.setCharacterSize(36);
     		timeText.setFillColor(sf::Color::Black);
-		timeText.setPosition(400.0f, 200.0f);
-		timeText.setString("Vous êtes morts");
-			
-		restart();
+		timeText.setString("Vous etes morts");
+		
 		return -1;
 	}
 
@@ -98,11 +101,22 @@ class Gamemap{
 		std::cout<<move_player(0,0)<<std::endl;
 		return move_player(0, 1);
 	}
+	
+	//accède à l'état du joueur pour qu'il soit en mode Jump et saute de lui même à chaque actualisation
 	void jump(){
 		//saut avec espace, on met l'état du joueur à "JUMP"
-		player.setState(1);
+		switch(player.getState()){
+			case(0):
+			player.setState(1);
+			break;
+			case(1):
+			player.setState(2);
+			break;
+			
+		};
 	}
 
+	//fonction pour dessiner les sprites de tout les objets contenues dans la classe Gamemap
 	void draw(sf::RenderWindow* window){
 		//std::cout<<"number of element in the scene vector: "<<vect_scene.size()<<std::endl;
 		vect_scene[0].draw(window);
@@ -111,47 +125,50 @@ class Gamemap{
 		
 	}
 	
-	
+	//permet de remettre
 	void Gravity(float time){
-			//permet de limiter le temps de telle sorte que la gravité ne dépenent pas du nombre de tour de boucle/secondes
+			//permet de limiter le temps de telle sorte que la gravité ne dépenent pas du nombre de tour de boucle/secondes et quelle ne s'éxecute pas si le joueur est au sol
 			if(isOnGround() && time>gravtime){
 				move_player( 0, 5);
 				gravtime=time+0.05;
 				}
 	}
-	
-	//gestion de la mort pour l'instant la fonction restart me fais crash
-	void restart(){
-		float tmp=time.asSeconds()+3.0;
-		while(time.asSeconds()<tmp);
-		time=clock.restart();
-		player.setState(0);
-		timeText.setCharacterSize(24);
-    		timeText.setFillColor(sf::Color::Black);
-		timeText.setPosition(230.0f, 10.0f);
+	//fonction pour recommencer une partie
+
+	int getPlayersState(){
+		return player.getState();
 	}
-	void update(){
+	
+	void wait(){	
+		float tmp=time.asSeconds()+3.0;
+		while(time.asSeconds()<tmp){
+			time=clock.getElapsedTime();
+		}
+	}
+	//met à jour tout les sprites ainsi que l'état du joueur renvoie 0 si tout se passe bien et 1 si on doit attendre pour afficher quelquechose
+	void update(sf::RenderWindow *window){
+		
+		timeText.setString("Score : " + std::to_string(10*static_cast<int>(time.asSeconds())) );
 		//mettre à jour le personnage
 		time= clock.getElapsedTime();
 		//tmp est un bool qui vaut 1 si le joueur est dans un mur
 		vect_scene[idcurrtscene].update(time.asSeconds());	//pour mettre à jour les murs tueurs
-		//std::cout<< "temps en secondes"<<time.asSeconds()<<std::endl;
-		sf::Vector2f tmppos=player.getPosition();
-		sf::Vector2f tmpsize=player.getSize();
 		
 		//si dans un mur tueur : met état mort
-		//sinon laisse vivre
-		int tmpbool=this->checkInWall(tmppos, tmpsize);
-		//if(tmpbool<0){restart();}
+		int tmpbool=this->checkInWall(player.getPosition(), player.getSize());
+		if(tmpbool<0){killplayer();}
 		time= clock.getElapsedTime();
 		player.updateCaracter(time.asSeconds());
 		time= clock.getElapsedTime();
 		this->Gravity(time.asSeconds());
-		//mettre à jour le décor
 		
-		timeText.setString("Score : " + std::to_string(10*static_cast<int>(time.asSeconds())) );
-		
-		
+		//mise à jour des textures:
+		this->draw(window);
+		window->display();
+		if(tmpbool<0){
+			this->wait();
+			window->close();
+		}
 	}
 };
 

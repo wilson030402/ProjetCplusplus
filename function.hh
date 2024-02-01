@@ -17,7 +17,7 @@ sf::Vector2f getSize(sf::Vector2f vect_left, sf::Vector2f vect_right){
 	return sf::Vector2f(vect_right.x-vect_left.x, vect_right.y-vect_left.y);
 }
 
-
+//fonction pour initialiser les spritesà la bonne taille
 sf::Texture* init_sprite(sf::Sprite* sprite, const std::string textName, sf::Vector2f pos, sf::Vector2f *size ){
 	sf::Texture *text= new sf::Texture;
 	//text->create(static_cast<int>(size.x),static_cast<int>(size.y) );

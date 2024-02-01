@@ -24,12 +24,10 @@ class Character: public Drawable{
 	sf::Texture* texture;
 	sf::Vector2f hitbox;
 	sf::Sprite sprite;
-	float lastjump;
+	float lastjump; //le dernier temps ou l'on à sauté
 	float lastframe;
 	
 	public:
-	
-	//une méthode pour afficher des textures
 	
 	Character(sf::Vector2f pos, sf::Vector2f size, const std::string& textName ){
 			//std::cout<<"Personnage : "<<std::endl;
@@ -50,15 +48,16 @@ class Character: public Drawable{
 			lastframe=0.0;
 		}
 		
-		
+	//constructeur par copie	
 	Character(const Character& chara){
 			*this=chara;
 		}
+	//constructeur par défaut
 	Character(){
 		this->state=0;
 		lastjump=0.0;
 		}
-		
+	//setter de l'état du joueur, qui empêche de mettre des états non-contrôlé
 	void setState(int newstate){
 			if(newstate==JUMP){
 				state=newstate;
@@ -72,7 +71,7 @@ class Character: public Drawable{
 			}
 			
 		}
-		
+	//méthode pour déplacer le sprite à la position passé en paramêtre	
 	void move(float x, float y){
 		sprite.move(x, y);
 	}
@@ -80,15 +79,15 @@ class Character: public Drawable{
 		sprite.move(pos.x, pos.y);
 	}
 		
-		
+	//getter pour la position du sprite
 	sf::Vector2f getPosition(){
 		return this->sprite.getPosition();
 	}
-		
+	//permet de mettre le joueur en mode saut
 	void jump(){
-
 		move(0, (-1.2)*cpt_jump );
 		cpt_jump--;
+		
 	}
 		
 		//si isinWall = 0 alors le joueur meurt
@@ -109,15 +108,19 @@ class Character: public Drawable{
 		return this->getPosition();
 		
 	}
+	//getter pour l'état
 	int getState(){
 		return this->state;
 	}
+	//getter pour le saut
 	int getcpt_jump(){
 		return cpt_jump;
 	}
+	//getter pour la Hitbox
 	sf::Vector2f getHitbox(){
 		return this->hitbox;
 		}
+		//getter pour la taille
 	sf::Vector2f getSize(){
 		return this->hitbox;
 	}
@@ -149,12 +152,11 @@ class Character: public Drawable{
 	}
 
 		
-		
-	void draw(sf::RenderWindow* window){
+	//méthode permettant de dessiner sur la fenêtre
+	virtual void draw(sf::RenderWindow* window){
 		
 		sf::Vector2f tmp=sf::Vector2f(800.0, 400.0);
 		if(this->state==DEAD){
-			init_sprite(&(this->sprite), "ressource/images.jpeg", sf::Vector2f(0.0, 0.0), &tmp);
 			window->draw(this->sprite);	
 			//std::cout<<"debug";	
 		}
@@ -162,7 +164,8 @@ class Character: public Drawable{
 			window->draw(this->sprite);
 		}
 	}
-		
+	
+	//surcharge d'opérateur pour la construction par copie
 	Character& operator=(const Character& charabis){
 		this->state=charabis.state;
 		this->cpt_jump=charabis.cpt_jump; //pour faire des animations il faut l'état de la dite animation

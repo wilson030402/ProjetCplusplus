@@ -5,7 +5,7 @@
 
 #ifndef WALL_HH
 #define WALL_HH
-
+//classe pour faire des murs/sols
 class Wall: public Drawable{
 	protected:
 	sf::Vector2f top_left;
@@ -25,6 +25,14 @@ class Wall: public Drawable{
 		return 0; // Player is outside the wall
 		}
 	
+	//dans ce cas elle permet simplement de différencier les murs classiques des murs tueurs
+	virtual int getState(){
+		return 0;
+	}
+	Wall(){
+		top_left=sf::Vector2f(0.0, 0.0);
+		bot_right=sf::Vector2f(0.0, 0.0);
+	}
 	Wall(sf::Vector2f vect_left, sf::Vector2f vect_right){
 		top_left=vect_left;
 		bot_right=vect_right;
@@ -46,6 +54,7 @@ class Wall: public Drawable{
 		sprite.setTexture(*texture);
 	}
 	
+	//constructeur par copie
 	Wall(const Wall& wall){
 		*this=wall;
 	}
@@ -55,9 +64,12 @@ class Wall: public Drawable{
 		return sprite;
 	}
 	
+	//fonction pour dessiner les murs via la scene
 	void draw(sf::RenderWindow* window){
 		window->draw(this->sprite);
 	}
+	
+	//surcharge d'opérateur pour le constructeur par copie
 	Wall& operator=(const Wall& wallbis){
 		
 		this->top_left=wallbis.top_left;
@@ -71,12 +83,14 @@ class Wall: public Drawable{
 		return this->top_left;
 	}
 	
+	//méthode pour permettre à la scene de déplacer les murs, n'est pas utilisée 
 	virtual void move_left(float val){
+		
+	}
+	float getPosX(){
+		return this->sprite.getPosition().x;
 	}
 	
-	float getPosX(){
-		return top_left.x;
-	}
 };
 
 

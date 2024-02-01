@@ -31,11 +31,18 @@ class KillingWall: public Wall{
 			return tmp;
 		}
 	}
+	
+	//permet d'acceder à l'état du joueur en dehors de la classe
 	int setState(int state){
 		return this->state=state;
 	}
+	
+	//permet de connaitre l'état du joueur en dehors de la classe
+	int getState() override{
+		return state;
+	}
+	
 	//redéfinition des constructeur
-	//...........
 	KillingWall(sf::Vector2f vect_left, sf::Vector2f vect_right):\
 	Wall(vect_left, vect_right)\
 	{
@@ -50,12 +57,13 @@ class KillingWall: public Wall{
 	cpt_state=0;
 	}
 	
-	
+	//constructeur par copie
 	KillingWall(const KillingWall& wall):Wall(wall){
 		this->state=wall.state;
 		this->cpt_state=wall.cpt_state;
 	}
 	
+	//méthode qui va permettre de faire défiler les murs en dehors de la classe
 	void move_left(float val) override{
 		this->top_left.x-=val;
 		this->bot_right.x-=val;

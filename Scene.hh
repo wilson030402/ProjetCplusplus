@@ -6,6 +6,8 @@
 #include "Wall.hh"
 #include "KillingWall.hh"
 #include <list>
+#include "Ground.hh"
+
 
 #define DEBUG_ENABLED 1 //1 to show the wall on screen 0 otherwise
 
@@ -31,7 +33,6 @@ class Scene{
 	}
 	
 	
-	int nbWall=0;
 	
 	//return 1 if the position is in a wall and 0 otherwise
 	int checkInWall(const sf::Vector2f& playerpos, const sf::Vector2f& playersize){
@@ -48,7 +49,7 @@ class Scene{
 		return 0;
 	}
 	
-	
+	//fonction pour dessiner les murs ainsi que la scene 	
 	void draw(sf::RenderWindow* window){
 		window->draw(this->sprite);
 		for(auto& obj :list_wall){
@@ -56,25 +57,31 @@ class Scene{
 			//std::cout<<"scene->draw()\n";
 		}
 	}
-	void addWall(const KillingWall& wall){
-		list_wall.push_back(new KillingWall(wall));
-	}
-	
+	//setteur pour la liste
 	void addWall(const Wall& wall){
 		list_wall.push_back(new Wall(wall));
 	}
+	//variante pour les murs tueurs
+	void addWall(const KillingWall& wall){
+		list_wall.push_back(new KillingWall(wall));
+	}
+	//variante pour le sol
+	void addWall(const Ground& wall){
+		list_wall.push_back(new Ground(wall));
+	}
 	
-	
+	//pointeur vers le sol
 	sf::Sprite* pxgetSprite(){
 		return &(this->sprite);
 	}
+	
 	//méthode qui permet de mettre à jour l'état, la taille des murs tueurs ainsi que l'état du joueur 
 	int update( float time){
-	
-	
 		//génération des murs 1 mur peut être généré toutes les 0.4 ms
 		if(time-lastcreate>1.0 && (list_wall.size()<(time/10)) ){
+			std::cout<<"before KillerWallCreation"<<std::endl;
 			this->generateKillerWall();
+			std::cout<<"after KillerWallCreation"<<std::endl;
 			lastcreate=time;
 		}
 		//déplacement des murs
@@ -99,21 +106,42 @@ class Scene{
 		return 1;
 	}
 	
+	void freeWall(){
+		//supprime tout les murs tueurs à l'état 1 KILLING
+		for (auto it = list_wall.begin(); it != list_wall.end();) {
+			if((*it)->getState()==1){
+				delete *it;
+			}
+		}
+	}
 	
-	//-----------//!\\ En travaux //!\\----------------
 	//méthode dont le but est de génerer un mur tueur à une position aléatoire
 	void generateKillerWall(){
-		//std::cout<<"un mmur est générée";
+		float tmp=800.0;
+		float posmax=800.0;
+		//boucle pour éviter d'avoir des murs trop proche
+		std::cout<<"before if"<<std::endl;
+		if(list_wall.size()!=1){
+			std::cout<<"after if"<<std::endl;
+			for(auto it = list_wall.begin(); it != list_wall.end();){
+				if(it!=list_wall.begin())
+					tmp=(*it)->getPosX();
+					if(tmp>posmax){
+						posmax=tmp+200;
+					}
+				it++;
+			}
+		}
 		//la position est générée hors champ côté droit
-		float pos=Randomfloat( 800.0, 1600.0);
-		//std::cout<<", position : "<<pos<<std::endl;
+		float pos=Randomfloat( posmax, 1600.0);
+		std::cout<<"after Random"<<std::endl;
 		KillingWall killer(sf::Vector2f(pos, 250.0), sf::Vector2f(pos-40.0, 330.0),\
 		 "Hurdel_runner/sprites/spr_hurdel/hurdel.png");
+		std::cout<<"after Killercreation"<<std::endl;
 		killer.setState(1);
 		//ajout de ce dernier
 		addWall(killer);
 	}
-	//-----------//!\\ En travaux //!\\----------------
 	
 	
 };
